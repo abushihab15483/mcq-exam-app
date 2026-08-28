@@ -19,18 +19,26 @@ export default function AdminLoginForm() {
     setError(null);
     setLoading(true);
 
-    const supabase = createClient();
-    const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+    try {
+      const supabase = createClient();
+      const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
 
-    setLoading(false);
+      if (signInError) {
+        setError("লগইন ব্যর্থ হয়েছে। ইমেইল অথবা পাসওয়ার্ড সঠিক নয়।");
+        return;
+      }
 
-    if (signInError) {
-      setError("লগইন ব্যর্থ হয়েছে। ইমেইল অথবা পাসওয়ার্ড সঠিক নয়।");
-      return;
+      router.push("/dashboard");
+      router.refresh();
+    } catch (err) {
+      // env variable missing/network/অন্য যেকোনো অপ্রত্যাশিত সমস্যা হলেও
+      // বাটন যেন চিরকাল "লগইন হচ্ছে..." তে আটকে না থাকে, ব্যবহারকারী একটা
+      // মেসেজ দেখুক এবং আবার চেষ্টা করতে পারুক।
+      console.error("Admin login error:", err);
+      setError("একটা সমস্যা হয়েছে, একটু পরে আবার চেষ্টা করো। সমস্যা থাকলে সাইট অ্যাডমিনকে জানাও।");
+    } finally {
+      setLoading(false);
     }
-
-    router.push("/dashboard");
-    router.refresh();
   }
 
   return (
