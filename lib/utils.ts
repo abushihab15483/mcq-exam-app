@@ -10,6 +10,7 @@ export function formatDateTime(iso: string): string {
   return new Date(iso).toLocaleString("bn-BD", {
     dateStyle: "medium",
     timeStyle: "short",
+    timeZone: "Asia/Dhaka",
   });
 }
 
