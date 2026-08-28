@@ -1,0 +1,28 @@
+# dependencies
+/node_modules
+
+# next.js build output
+/.next/
+/out/
+
+# production
+/build
+
+# env files (real secrets — never commit)
+.env
+.env.local
+.env.*.local
+
+# misc
+.DS_Store
+*.pem
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# mathjax auto-generated assets
+/public/vendor/mathjax
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts

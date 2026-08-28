@@ -1,0 +1,25 @@
+<svg viewBox="0 0 480 360" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="লাইভ এক্সামে বসে থাকা একজন শিক্ষার্থীর ইলাস্ট্রেশন">
+  <rect width="480" height="360" rx="28" fill="#142850"/>
+  <circle cx="392" cy="64" r="46" fill="#1D3868"/>
+  <circle cx="60" cy="300" r="60" fill="#1D3868"/>
+
+  <!-- desk -->
+  <rect x="90" y="252" width="300" height="16" rx="8" fill="#274A87"/>
+  <rect x="112" y="268" width="16" height="46" fill="#274A87"/>
+  <rect x="352" y="268" width="16" height="46" fill="#274A87"/>
+
+  <!-- paper -->
+  <rect x="176" y="196" width="128" height="66" rx="8" fill="#F7F8FC"/>
+  <rect x="192" y="212" width="96" height="6" rx="3" fill="#A6ABBA"/>
+  <rect x="192" y="226" width="72" height="6" rx="3" fill="#A6ABBA"/>
+  <rect x="192" y="240" width="84" height="6" rx="3" fill="#A6ABBA"/>
+
+  <!-- person -->
+  <circle cx="240" cy="120" r="34" fill="#F14E96"/>
+  <path d="M186 214c0-40 24-66 54-66s54 26 54 66" fill="#E31C79"/>
+
+  <!-- clock badge -->
+  <circle cx="360" cy="150" r="34" fill="#FFB627"/>
+  <circle cx="360" cy="150" r="24" fill="#142850"/>
+  <path d="M360 136v16l11 8" stroke="#FFC857" stroke-width="4" stroke-linecap="round" fill="none"/>
+</svg>
