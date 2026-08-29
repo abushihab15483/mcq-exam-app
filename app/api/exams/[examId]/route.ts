@@ -76,6 +76,9 @@ export async function PUT(request: Request, { params }: { params: { examId: stri
   // notun status/data দেখাতে হবে, নাহলে Router Cache পুরনো তালিকা দেখাচ্ছিল
   revalidatePath("/exams");
   revalidatePath("/results");
+  // student-der public exam list (/exam) — publish/close korle এখানেও
+  // notun exam সাথে সাথেই "চলমান"/"আসন্ন" এ দেখাতে হবে, আগে বাদ পড়েছিল
+  revalidatePath("/exam");
 
   return Response.json({ exam: data });
 }
@@ -92,6 +95,7 @@ export async function DELETE(_request: Request, { params }: { params: { examId: 
   revalidatePath("/");
   revalidatePath("/exams");
   revalidatePath("/results");
+  revalidatePath("/exam");
 
   return Response.json({ success: true });
 }
