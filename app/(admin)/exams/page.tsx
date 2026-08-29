@@ -1,5 +1,6 @@
 import Link from "next/link";
 import AdminShell from "@/components/admin/AdminShell";
+import DeleteExamButton from "@/components/admin/DeleteExamButton";
 import Table from "@/components/ui/Table";
 import { Button } from "@/components/ui";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -53,6 +54,7 @@ export default async function ExamsListPage() {
                     প্রশ্ন দেখো
                   </Button>
                 </Link>
+                <DeleteExamButton examId={exam.id} examTitle={exam.title} />
               </div>
             ),
           },
