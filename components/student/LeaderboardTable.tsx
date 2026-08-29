@@ -80,8 +80,9 @@ export default function LeaderboardTable({ rows, currentUser }: LeaderboardTable
             key={`${row.rank}-${row.student_name}`}
             className={cn(
               "flex items-center gap-3 rounded-card border border-border bg-white px-4 py-3",
-              row.rank <= 3 && "border-gold/40 bg-gold/5",
-              isSameRow(row, currentUser) && "border-emerald-700/50 bg-emerald-700/15"
+              isSameRow(row, currentUser)
+                ? "border-emerald-700/50 bg-emerald-700/15"
+                : row.rank <= 3 && "border-gold/40 bg-gold/5"
             )}
           >
             <span className="w-7 shrink-0 text-center text-sm font-semibold text-ink-soft" aria-hidden="true">
