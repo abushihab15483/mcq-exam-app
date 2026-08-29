@@ -48,6 +48,10 @@ export async function POST(request: Request) {
   // ৩০ সেকেন্ড পার না হওয়া পর্যন্ত নতুন exam দেখাত না। এখানে revalidatePath
   // call করায় create করার সাথে সাথেই cache purge হয়ে যাবে, পরের রিকোয়েস্টেই fresh data।
   revalidatePath("/");
+  // admin panel এর exam list ও এই মুহূর্তেই notun exam দেখাতে হবে —
+  // নাহলে client-side Router Cache এর কারণে নতুন তৈরি করা exam list এ
+  // দেখাতে (Router Cache নিজে থেকে stale না হওয়া পর্যন্ত) দেরি হচ্ছিল
+  revalidatePath("/exams");
 
   return Response.json({ exam: data });
 }

@@ -72,6 +72,10 @@ export async function PUT(request: Request, { params }: { params: { examId: stri
   // status "published"/"closed" এ বদলালে হোমপেজের countdown card/ব্যানার
   // সাথে সাথেই আপডেট হবে — ৩০ সেকেন্ড ISR window এর জন্য অপেক্ষা করতে হবে না
   revalidatePath("/");
+  // admin panel এর exam list ও results list — এডিট/publish করার সাথে সাথেই
+  // notun status/data দেখাতে হবে, নাহলে Router Cache পুরনো তালিকা দেখাচ্ছিল
+  revalidatePath("/exams");
+  revalidatePath("/results");
 
   return Response.json({ exam: data });
 }
@@ -86,6 +90,8 @@ export async function DELETE(_request: Request, { params }: { params: { examId: 
   if (error) return Response.json({ error: "মুছে ফেলা যায়নি" }, { status: 500 });
 
   revalidatePath("/");
+  revalidatePath("/exams");
+  revalidatePath("/results");
 
   return Response.json({ success: true });
 }
