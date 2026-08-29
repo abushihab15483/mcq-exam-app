@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Header from "@/components/coaching/Header";
 import Footer from "@/components/coaching/Footer";
 import ExamCard from "@/components/coaching/ExamCard";
+import AutoRefresh from "@/components/shared/AutoRefresh";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { formatDateTime } from "@/lib/utils";
 import { DEMO_RUNNING_EXAM, DEMO_UPCOMING_EXAM } from "@/lib/demo-exams";
@@ -39,6 +40,7 @@ export default async function ExamListPage() {
 
   return (
     <div className="min-h-screen bg-paper">
+      <AutoRefresh intervalMs={30_000} />
       <Header />
       <main className="mx-auto max-w-6xl px-5 py-14">
         <span className="text-xs font-semibold uppercase tracking-wide text-gold">পরীক্ষাসমূহ</span>

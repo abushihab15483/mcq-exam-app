@@ -6,6 +6,7 @@ import Header from "@/components/coaching/Header";
 import Footer from "@/components/coaching/Footer";
 import EntryForm from "@/components/student/EntryForm";
 import Card from "@/components/ui/Card";
+import AutoRefresh from "@/components/shared/AutoRefresh";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 export const dynamic = "force-dynamic";
@@ -34,6 +35,7 @@ export default async function LiveExamEntryPage() {
 
   return (
     <div className="flex min-h-screen flex-col">
+      <AutoRefresh intervalMs={30_000} />
       <Header />
       <main className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center px-6 py-12">
         {!exam ? (
