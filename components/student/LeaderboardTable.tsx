@@ -81,7 +81,7 @@ export default function LeaderboardTable({ rows, currentUser }: LeaderboardTable
             className={cn(
               "flex items-center gap-3 rounded-card border border-border bg-white px-4 py-3",
               isSameRow(row, currentUser)
-                ? "border-emerald-700/50 bg-emerald-700/15"
+                ? "border-emerald-700 bg-emerald-700/25 ring-1 ring-emerald-700/40"
                 : row.rank <= 3 && "border-gold/40 bg-gold/5"
             )}
           >
