@@ -99,3 +99,44 @@ export const contactMessageSchema = z.object({
 });
 
 export type ContactMessageInput = z.infer<typeof contactMessageSchema>;
+
+// Notice board (Step 18) — admin form (client) আর POST/PATCH route (server)
+// দুটোই এই একই schema ব্যবহার করবে, examSchema এর মতোই একমাত্র সত্যের উৎস।
+//
+// expires_at, publish_at এর আগে/সমান হলে notice কখনোই কাউকে দেখানো যাবে না
+// (প্রকাশের সাথে সাথেই মেয়াদ শেষ) — এটা admin এর ভুল থেকে আগেই আটকানো হলো,
+// examSchema এর start/end time superRefine এর মতোই যুক্তি।
+export const noticeSchema = z
+  .object({
+    title: z.string().trim().min(2, "নোটিশের শিরোনাম দাও").max(200, "শিরোনাম অনেক বড়, ছোট করো"),
+    content: z.string().trim().max(2000, "বিবরণ অনেক বড়, ছোট করো").optional().or(z.literal("")),
+    category: z.enum(["result", "off_day", "routine", "admission", "urgent", "general"]),
+    attachment_url: z.string().trim().url("সঠিক লিংক না").optional().or(z.literal("")),
+    status: z.enum(["draft", "published"]),
+    is_pinned: z.coerce.boolean().default(false),
+    publish_at: z.string().min(1, "প্রকাশের সময় দাও"),
+    expires_at: z.string().optional().or(z.literal("")),
+  })
+  .superRefine((data, ctx) => {
+    const publish = new Date(data.publish_at).getTime();
+    if (Number.isNaN(publish)) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["publish_at"], message: "প্রকাশের সময় সঠিক না" });
+      return;
+    }
+    if (data.expires_at) {
+      const expires = new Date(data.expires_at).getTime();
+      if (Number.isNaN(expires)) {
+        ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["expires_at"], message: "মেয়াদ শেষের সময় সঠিক না" });
+        return;
+      }
+      if (expires <= publish) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["expires_at"],
+          message: "মেয়াদ শেষের সময় অবশ্যই প্রকাশের সময়ের পরে হতে হবে।",
+        });
+      }
+    }
+  });
+
+export type NoticeInput = z.infer<typeof noticeSchema>;

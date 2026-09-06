@@ -13,6 +13,38 @@ export interface Exam {
   created_at: string;
 }
 
+// Notice board (Step 18) — supabase/step18-notices.sql এর সাথে মিলিয়ে বানানো
+export type NoticeCategory =
+  | "result"
+  | "off_day"
+  | "routine"
+  | "admission"
+  | "urgent"
+  | "general";
+
+export type NoticeStatus = "draft" | "published";
+
+export interface Notice {
+  id: string;
+  title: string;
+  content: string | null;
+  category: NoticeCategory;
+  attachment_url: string | null;
+  status: NoticeStatus;
+  is_pinned: boolean;
+  publish_at: string; // ISO timestamp
+  expires_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+// Public/ticker এ পাঠানোর জন্য — admin-only ফিল্ড (status, created_at, updated_at)
+// বাদ, কারণ client এ এগুলোর দরকার নেই (Question এর PublicQuestion pattern অনুসরণ করে)
+export type PublicNotice = Pick<
+  Notice,
+  "id" | "title" | "content" | "category" | "attachment_url" | "is_pinned" | "publish_at" | "expires_at"
+>;
+
 // admin question list/edit (GET /api/questions?exam_id=..., QuestionList.tsx,
 // QuestionForm.tsx) — exam_id/order_index/created_at বাদ, response/UI তে অব্যবহৃত
 // (exam_id route param থেকেই জানা, order_index শুধু query-level sort এ লাগে)
