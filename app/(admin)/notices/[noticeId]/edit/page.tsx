@@ -36,10 +36,23 @@ export default async function EditNoticePage({
     );
   }
 
+  // FINAL PLAN Step 7 — soft pin warning: এই notice বাদে বাকি কতগুলো is_pinned=true
+  // (নিজেকে .neq দিয়ে বাদ, নাহলে already-pinned notice এডিট করলেই নিজের গণনা নিজেই
+  // একবার বেশি হয়ে যেতো)
+  const { count: otherPinnedCount } = await supabase
+    .from("notices")
+    .select("id", { count: "exact", head: true })
+    .eq("is_pinned", true)
+    .neq("id", params.noticeId);
+
   return (
     <AdminShell>
       <h1 className="font-display text-2xl font-semibold text-ink mb-6">নোটিশ এডিট করো</h1>
-      <EditNoticeForm notice={notice} initialError={searchParams.uploadError} />
+      <EditNoticeForm
+        notice={notice}
+        initialError={searchParams.uploadError}
+        existingPinnedCount={otherPinnedCount ?? 0}
+      />
     </AdminShell>
   );
 }

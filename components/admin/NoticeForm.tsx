@@ -18,6 +18,10 @@ interface NoticeFormProps {
   // এই submit এ নতুন file আছে কিনা, নাকি existing attachment সরাতে বলা হয়েছে
   onSubmit: (values: NoticeInput, opts: { file: File | null; removeAttachment: boolean }) => void;
   submitLabel?: string;
+  // FINAL PLAN Step 7 — pin এ hard DB limit নেই, শুধু soft warning (৩+ পিন হলে)।
+  // এই সংখ্যাটা এই ফর্মের notice বাদে বাকি সব notice এর মধ্যে যতগুলো is_pinned=true
+  // (server component পাতা থেকে গোনা — দেখো notices/new ও notices/[noticeId]/edit)
+  existingPinnedCount?: number;
 }
 
 // datetime-local ইনপুট এর ভ্যালু থেকে UTC ISO string — ExamForm এর
@@ -29,7 +33,12 @@ function toISOOrEmpty(localValue: string): string {
   return Number.isNaN(d.getTime()) ? "" : d.toISOString();
 }
 
-export default function NoticeForm({ initialValue, onSubmit, submitLabel = "সংরক্ষণ করো" }: NoticeFormProps) {
+export default function NoticeForm({
+  initialValue,
+  onSubmit,
+  submitLabel = "সংরক্ষণ করো",
+  existingPinnedCount = 0,
+}: NoticeFormProps) {
   const [title, setTitle] = useState(initialValue?.title ?? "");
   const [content, setContent] = useState(initialValue?.content ?? "");
   const [category, setCategory] = useState<NoticeCategory>(initialValue?.category ?? "general");
@@ -195,15 +204,26 @@ export default function NoticeForm({ initialValue, onSubmit, submitLabel = "স�
         />
       </div>
 
-      <label className="flex items-center gap-2 text-sm font-medium text-ink-soft">
-        <input
-          type="checkbox"
-          checked={isPinned}
-          onChange={(e) => setIsPinned(e.target.checked)}
-          className="h-4 w-4 rounded border-border text-gold focus:ring-gold/40"
-        />
-        পিন করো (সবার উপরে দেখাবে)
-      </label>
+      <div className="flex flex-col gap-1.5">
+        <label className="flex items-center gap-2 text-sm font-medium text-ink-soft">
+          <input
+            type="checkbox"
+            checked={isPinned}
+            onChange={(e) => setIsPinned(e.target.checked)}
+            className="h-4 w-4 rounded border-border text-gold focus:ring-gold/40"
+          />
+          পিন করো (সবার উপরে দেখাবে)
+        </label>
+        {/* FINAL PLAN Step 7 — hard limit নেই, শুধু soft warning: এই notice সহ
+            পিন করা মোট ৩ বা তার বেশি হয়ে গেলে হালকা সতর্কতা, submit আটকায় না */}
+        {isPinned && existingPinnedCount >= 2 && (
+          <p className="text-xs text-ink-faint">
+            ⚠️ ইতিমধ্যে {existingPinnedCount}টা নোটিশ পিন করা আছে — এটাসহ মোট{" "}
+            {existingPinnedCount + 1}টা হয়ে যাবে। অনেকগুলো পিন করলে গুরুত্ব কমে
+            যেতে পারে, প্রয়োজন না হলে কমিয়ে রাখাই ভালো।
+          </p>
+        )}
+      </div>
 
       <div className="flex flex-col gap-1.5">
         <span className="text-sm font-medium text-ink-soft">অ্যাটাচমেন্ট (PDF/JPG/PNG, সর্বোচ্চ ৪MB)</span>

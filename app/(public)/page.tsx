@@ -8,10 +8,12 @@ import ContactForm from "@/components/coaching/ContactForm";
 import FaqAccordion from "@/components/coaching/FaqAccordion";
 import CountUpStat from "@/components/coaching/CountUpStat";
 import ScrollReveal from "@/components/shared/ScrollReveal";
+import NoticeCard from "@/components/coaching/NoticeCard";
 import { Card } from "@/components/ui";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { DEMO_RUNNING_EXAM } from "@/lib/demo-exams";
 import { siteConfig } from "@/lib/seo";
+import type { PublicNotice } from "@/types";
 
 export const revalidate = 30;
 
@@ -148,8 +150,35 @@ async function getFeaturedExam() {
   };
 }
 
+const PUBLIC_NOTICE_COLUMNS =
+  "id, title, content, category, attachment_url, is_pinned, publish_at, expires_at";
+
+// homepage summary — /api/notices GET আর /notice page এর হুবহু একই public filter/order
+// (status='published', publish_at<=now, expire হয়নি, pinned আগে তারপর নতুন আগে), শুধু
+// limit(3) যোগ করা — নিজের API নিজে fetch না করে (exam/page.tsx এর pattern) সরাসরি
+// Supabase query, ব্যর্থ হলে homepage যাতে ভেঙে না পড়ে সেজন্য চুপচাপ খালি array।
+async function getLatestNotices(): Promise<PublicNotice[]> {
+  try {
+    const supabase = createAdminClient();
+    const nowIso = new Date().toISOString();
+    const { data } = await supabase
+      .from("notices")
+      .select(PUBLIC_NOTICE_COLUMNS)
+      .eq("status", "published")
+      .lte("publish_at", nowIso)
+      .or(`expires_at.is.null,expires_at.gt.${nowIso}`)
+      .order("is_pinned", { ascending: false })
+      .order("publish_at", { ascending: false })
+      .limit(3)
+      .returns<PublicNotice[]>();
+    return data ?? [];
+  } catch {
+    return [];
+  }
+}
+
 export default async function HomePage() {
-  const featuredExam = await getFeaturedExam();
+  const [featuredExam, latestNotices] = await Promise.all([getFeaturedExam(), getLatestNotices()]);
 
   // Structured data (JSON-LD) — Google কে সরাসরি বলে দেয় এটা কোন ধরনের ব্যবসা,
   // কোথায় অবস্থিত, ফোন নাম্বার কী। এইটা থাকলে "জামালপুর কোচিং সেন্টার" এর মতো
@@ -243,6 +272,47 @@ export default async function HomePage() {
             </div>
           </div>
         </section>
+
+        {/* NOTICE BOARD SUMMARY — FINAL PLAN: হিরোর ঠিক নিচে, latest ৩টা,
+            WHY_US card স্টাইল (rounded-card, white bg, hover lift), সাথে
+            "সব নোটিশ →" লিংক। কোনো published notice না থাকলে পুরো সেকশনই
+            hide (homepage-এ খালি "কোনো নোটিশ নেই" state দেখানো দরকার নেই,
+            /notice ফুল পেজেই সেই empty state আছে)। */}
+        {latestNotices.length > 0 && (
+          <section className="mx-auto max-w-6xl px-5 pb-16">
+            <div className="flex flex-wrap items-end justify-between gap-4 reveal-up">
+              <div>
+                <span className="text-xs font-semibold uppercase tracking-wide text-gold">
+                  নোটিশ বোর্ড
+                </span>
+                <h2 className="mt-2 font-display text-2xl font-semibold leading-snug text-ink sm:text-3xl">
+                  সাম্প্রতিক নোটিশ
+                </h2>
+              </div>
+              <Link
+                href="/notice"
+                className="inline-flex shrink-0 items-center gap-1.5 text-sm font-semibold text-gold underline decoration-gold/40 decoration-2 underline-offset-4 hover:decoration-gold"
+              >
+                সব নোটিশ
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M5 12h14" /><path d="M13 6l6 6-6 6" />
+                </svg>
+              </Link>
+            </div>
+
+            <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+              {latestNotices.map((notice, i) => (
+                <div
+                  key={notice.id}
+                  className="reveal-up transition-all duration-200 hover:-translate-y-1"
+                  style={{ transitionDelay: `${i * 90}ms` }}
+                >
+                  <NoticeCard notice={notice} />
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
 
         {/* UPCOMING LIVE EXAM */}
         <section className="mx-auto max-w-6xl px-5 pb-16">

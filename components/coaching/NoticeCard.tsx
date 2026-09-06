@@ -1,5 +1,6 @@
 import NoticeCategoryBadge from "@/components/shared/NoticeCategoryBadge";
 import { formatDateTime } from "@/lib/utils";
+import { isRecentlyPublishedNotice } from "@/lib/noticeCategory";
 import type { PublicNotice } from "@/types";
 
 interface NoticeCardProps {
@@ -32,12 +33,15 @@ export default function NoticeCard({ notice, variant = "full" }: NoticeCardProps
       ? "PDF দেখুন"
       : "ছবি দেখুন"
     : null;
+  // FINAL PLAN Step 7 — publish_at থেকে ৭২ ঘণ্টার মধ্যে হলে "নতুন" ব্যাজ
+  const isNew = isRecentlyPublishedNotice(notice.publish_at);
 
   return (
-    <div className="rounded-card border border-border bg-white p-5 shadow-sm">
+    <div className="rounded-card border border-border bg-white p-4 shadow-sm sm:p-5">
       <div className="flex flex-wrap items-center gap-2">
         <NoticeCategoryBadge category={notice.category} />
         {notice.is_pinned && <span className="text-xs font-medium text-gold">📌 পিন করা</span>}
+        {isNew && <span className="text-xs font-medium text-success">✨ নতুন</span>}
       </div>
 
       <h3 className="mt-3 font-display text-base font-semibold leading-snug text-ink">

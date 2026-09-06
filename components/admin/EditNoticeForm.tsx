@@ -12,9 +12,12 @@ interface EditNoticeFormProps {
   // "notices/new" থেকে attachment upload fail হয়ে redirect হলে এই query
   // param দিয়ে কারণটা এখানে দেখানো হয় (দেখো app/(admin)/notices/new/page.tsx)
   initialError?: string;
+  // FINAL PLAN Step 7 — soft pin warning: এই notice বাদে বাকি কতগুলো is_pinned=true
+  // (app/(admin)/notices/[noticeId]/edit/page.tsx থেকে গোনা, নিজেকে বাদ দিয়ে)
+  existingPinnedCount: number;
 }
 
-export default function EditNoticeForm({ notice, initialError }: EditNoticeFormProps) {
+export default function EditNoticeForm({ notice, initialError, existingPinnedCount }: EditNoticeFormProps) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(initialError ?? null);
   const [saving, setSaving] = useState(false);
@@ -81,6 +84,7 @@ export default function EditNoticeForm({ notice, initialError }: EditNoticeFormP
         initialValue={notice}
         onSubmit={handleSubmit}
         submitLabel={saving ? "সংরক্ষণ হচ্ছে..." : "পরিবর্তন সংরক্ষণ করো"}
+        existingPinnedCount={existingPinnedCount}
       />
     </Card>
   );

@@ -32,3 +32,20 @@ export const NOTICE_CATEGORY_BADGE_CLASSES: Record<NoticeCategory, string> = {
 export const NOTICE_CATEGORY_OPTIONS: { value: NoticeCategory; label: string }[] = (
   Object.keys(NOTICE_CATEGORY_LABELS) as NoticeCategory[]
 ).map((value) => ({ value, label: NOTICE_CATEGORY_LABELS[value] }));
+
+// FINAL PLAN Step 7 — "নতুন" ব্যাজ: publish_at থেকে ৭২ ঘণ্টার মধ্যে হলে দেখানো হয়।
+// NoticeCard (Step 5) সার্ভার-রেন্ডার্ড (homepage/notice page) আর ক্লায়েন্ট-রেন্ডার্ড
+// (NoticeBoard এর ভেতরে) দুই জায়গাতেই ব্যবহার হয় — এই হিসাবটা সাধারণ ২৪ ঘণ্টার
+// countdown না (ExamCountdownCard এর মতো প্রতি সেকেন্ডে বদলায় না), তাই hydration
+// mismatch এড়াতে আলাদা কোনো ২-ধাপ useEffect লাগছে না — ৭২ ঘণ্টার সীমানায় ঠিক
+// পড়ে গেলে (অত্যন্ত বিরল মুহূর্ত) সার্ভার/ক্লায়েন্ট রেন্ডারে সামান্য ভিন্ন হতে পারে,
+// পরের রি-রেন্ডারেই ঠিক হয়ে যায় — কোনো ভুল ডেটা বা crash হয় না।
+export const NOTICE_NEW_BADGE_WINDOW_MS = 72 * 60 * 60 * 1000; // ৭২ ঘণ্টা
+
+export function isRecentlyPublishedNotice(publishAtIso: string): boolean {
+  const publishedMs = new Date(publishAtIso).getTime();
+  if (Number.isNaN(publishedMs)) return false;
+  const ageMs = Date.now() - publishedMs;
+  // ageMs < 0 মানে ঘড়ি skew/edge case — সেক্ষেত্রেও "নতুন" ধরে নেওয়া নিরাপদ
+  return ageMs <= NOTICE_NEW_BADGE_WINDOW_MS;
+}

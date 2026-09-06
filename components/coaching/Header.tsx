@@ -4,9 +4,11 @@ import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import NoticeTicker from "./NoticeTicker";
 
 const NAV_LINKS = [
   { href: "/", label: "হোম" },
+  { href: "/notice", label: "নোটিশ" },
   { href: "/about", label: "আমাদের সম্পর্কে" },
   { href: "/live", label: "লাইভ এক্সাম" },
   { href: "/exam", label: "পরীক্ষাসমূহ" },
@@ -19,7 +21,8 @@ export default function Header() {
 
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-paper/95">
-      <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 py-3">
+      <NoticeTicker />
+      <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 py-2.5 sm:py-3">
         <Link href="/" className="flex items-center gap-2.5" onClick={() => setOpen(false)}>
           <Image
             src="/images/coaching/logo-ankur-jamalpur.webp"
