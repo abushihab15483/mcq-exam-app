@@ -3,23 +3,10 @@ import { revalidatePath } from "next/cache";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getAdminSession } from "@/lib/api-auth";
 import { noticeSchema } from "@/lib/validators";
+import { NOTICE_ATTACHMENT_BUCKET, extractNoticeAttachmentPath } from "@/lib/noticeStorage";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
-
-// Step 3 (storage) এ attachment এই bucket এ, path: notices/{id}/{timestamp}-{name}
-// এ রাখা হবে — DELETE এর সময় attachment_url থাকলে এই bucket থেকে ফাইলটাও
-// cleanup করতে হবে, নাহলে notice row মুছে গেলেও storage এ orphan file থেকে যাবে।
-const ATTACHMENT_BUCKET = "notices";
-
-// Public URL থেকে bucket-relative object path বের করা — Supabase public URL
-// এর shape: https://.../storage/v1/object/public/{bucket}/{path}
-function extractStoragePath(attachmentUrl: string): string | null {
-  const marker = `/storage/v1/object/public/${ATTACHMENT_BUCKET}/`;
-  const idx = attachmentUrl.indexOf(marker);
-  if (idx === -1) return null;
-  return attachmentUrl.slice(idx + marker.length);
-}
 
 export async function PATCH(request: Request, { params }: { params: { noticeId: string } }) {
   const session = await getAdminSession();
@@ -86,9 +73,11 @@ export async function DELETE(_request: Request, { params }: { params: { noticeId
   // row ইতিমধ্যে মুছে গেছে, তাই এটা fail করলে শুধু log করা হচ্ছে, পুরো
   // request কে error হিসেবে ফেরত পাঠানো হচ্ছে না (orphan file, orphan row না)
   if (existing.attachment_url) {
-    const path = extractStoragePath(existing.attachment_url);
+    const path = extractNoticeAttachmentPath(existing.attachment_url);
     if (path) {
-      const { error: storageError } = await supabase.storage.from(ATTACHMENT_BUCKET).remove([path]);
+      const { error: storageError } = await supabase.storage
+        .from(NOTICE_ATTACHMENT_BUCKET)
+        .remove([path]);
       if (storageError) {
         console.error("[api/notices] attachment cleanup failed:", storageError);
       }
