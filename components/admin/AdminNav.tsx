@@ -17,6 +17,7 @@ const links: NavLink[] = [
   { href: "/dashboard", label: "ড্যাশবোর্ড" },
   { href: "/exams", label: "পরীক্ষাসমূহ" },
   { href: "/results", label: "ফলাফল" },
+  { href: "/notices", label: "নোটিশ" },
   { href: "/messages", label: "মেসেজ" },
 ];
 
