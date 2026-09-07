@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Header from "@/components/coaching/Header";
 import Footer from "@/components/coaching/Footer";
 import NoticeBoard from "@/components/coaching/NoticeBoard";
@@ -7,6 +8,16 @@ import type { PublicNotice } from "@/types";
 // প্রতিটা request এ fresh data — নাহলে নতুন প্রকাশিত/edited notice সাথে সাথে
 // দেখাতো না (exam list page এর একই pattern)
 export const dynamic = "force-dynamic";
+
+// FINAL PLAN Step 8 — বাকি পাবলিক পেজের (about/exam/contact) একই pattern:
+// title/description/canonical, openGraph override না করে root layout (app/layout.tsx)
+// এর ডিফল্ট openGraph ইনহেরিট করতে দেওয়া হলো (siteConfig.titleDefault + opengraph-image.jpg)
+export const metadata: Metadata = {
+  title: "নোটিশ বোর্ড",
+  description:
+    "অংকুর জামালপুর শাখার সব নোটিশ এক জায়গায় — পরীক্ষার ফলাফল, ছুটি, ক্লাস রুটিন, ভর্তি বিজ্ঞপ্তি ও জরুরি ঘোষণা।",
+  alternates: { canonical: "/notice" },
+};
 
 const PUBLIC_NOTICE_COLUMNS =
   "id, title, content, category, attachment_url, is_pinned, publish_at, expires_at";
