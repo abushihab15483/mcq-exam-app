@@ -14,7 +14,11 @@ export async function middleware(request: NextRequest) {
   let response = NextResponse.next({ request: { headers: request.headers } });
   const path = request.nextUrl.pathname;
   const isAdminRoute =
-    path.startsWith("/dashboard") || path.startsWith("/exams") || path.startsWith("/results") || path.startsWith("/messages");
+    path.startsWith("/dashboard") ||
+    path.startsWith("/exams") ||
+    path.startsWith("/results") ||
+    path.startsWith("/messages") ||
+    path.startsWith("/notices");
   const isLoginRoute = path.startsWith("/login");
 
   try {
@@ -62,5 +66,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/exams/:path*", "/results/:path*", "/messages/:path*", "/login"],
+  matcher: ["/dashboard/:path*", "/exams/:path*", "/results/:path*", "/messages/:path*", "/notices/:path*", "/login"],
 };

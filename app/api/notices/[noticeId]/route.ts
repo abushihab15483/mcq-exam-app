@@ -35,6 +35,12 @@ export async function PATCH(request: Request, { params }: { params: { noticeId: 
       is_pinned,
       publish_at,
       expires_at: expires_at || null,
+      // notices টেবিলে updated_at ধরে রাখার কোনো DB trigger নেই (supabase/step18-notices.sql
+      // দ্রষ্টব্য), তাই প্রতিটা update এ ম্যানুয়ালি এটা বসাতে হয় — নাহলে edit করার
+      // পরেও updated_at চিরকাল created_at এর সমানই থেকে যেত (নীরব bug, কারণ এই
+      // ফিল্ড এখন UI তে কোথাও না দেখালেও ভবিষ্যতে "সর্বশেষ এডিট" জাতীয় কিছু
+      // যোগ হলে ভুল তথ্য দেখাতো)
+      updated_at: new Date().toISOString(),
     })
     .eq("id", params.noticeId)
     .select()

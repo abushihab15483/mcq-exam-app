@@ -86,7 +86,7 @@ export async function POST(request: Request, { params }: { params: { noticeId: s
 
   const { data: updated, error: updateError } = await supabase
     .from("notices")
-    .update({ attachment_url: attachmentUrl })
+    .update({ attachment_url: attachmentUrl, updated_at: new Date().toISOString() })
     .eq("id", params.noticeId)
     .select()
     .single();
@@ -143,7 +143,7 @@ export async function DELETE(_request: Request, { params }: { params: { noticeId
 
   const { data: updated, error: updateError } = await supabase
     .from("notices")
-    .update({ attachment_url: null })
+    .update({ attachment_url: null, updated_at: new Date().toISOString() })
     .eq("id", params.noticeId)
     .select()
     .single();
