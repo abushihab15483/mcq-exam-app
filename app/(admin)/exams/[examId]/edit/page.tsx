@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import ExamForm from "@/components/admin/ExamForm";
 import Card from "@/components/ui/Card";
@@ -11,6 +11,10 @@ export default function EditExamPage({ params }: { params: { examId: string } })
   const [exam, setExam] = useState<Exam | null>(null);
   const [questionCount, setQuestionCount] = useState<number | undefined>(undefined);
   const [error, setError] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+  // দ্রুত ২-৩ বার ট্যাপে duplicate PUT call আটকাতে — দেখো exams/new/page.tsx এর
+  // একই কমেন্ট (savingRef কেন state এর বদলে ref)
+  const savingRef = useRef(false);
 
   useEffect(() => {
     fetch(`/api/exams/${params.examId}`)
@@ -22,7 +26,11 @@ export default function EditExamPage({ params }: { params: { examId: string } })
   }, [params.examId]);
 
   async function handleSubmit(values: unknown) {
+    if (savingRef.current) return;
+    savingRef.current = true;
+    setSaving(true);
     setError(null);
+
     const res = await fetch(`/api/exams/${params.examId}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
@@ -30,6 +38,8 @@ export default function EditExamPage({ params }: { params: { examId: string } })
     });
     const data = await res.json();
     if (!res.ok) {
+      savingRef.current = false;
+      setSaving(false);
       setError(data.error ?? "আপডেট করা যায়নি");
       return;
     }
@@ -50,9 +60,10 @@ export default function EditExamPage({ params }: { params: { examId: string } })
           <ExamForm
             initialValue={exam}
             onSubmit={handleSubmit}
-            submitLabel="পরিবর্তন সংরক্ষণ করো"
+            submitLabel={saving ? "সংরক্ষণ হচ্ছে..." : "পরিবর্তন সংরক্ষণ করো"}
             allowPublish={true}
             questionCount={questionCount}
+            disabled={saving}
           />
         ) : (
           <p className="text-ink-soft">লোড হচ্ছে...</p>

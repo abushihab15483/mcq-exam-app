@@ -22,6 +22,10 @@ interface NoticeFormProps {
   // এই সংখ্যাটা এই ফর্মের notice বাদে বাকি সব notice এর মধ্যে যতগুলো is_pinned=true
   // (server component পাতা থেকে গোনা — দেখো notices/new ও notices/[noticeId]/edit)
   existingPinnedCount?: number;
+  // পাতা (NewNoticeForm/EditNoticeForm) সেভ করার সময় true পাঠায় — বাটন disabled
+  // হয়ে যায়, নাহলে দ্রুত দুইবার/তিনবার ট্যাপ করলে দুইবার onSubmit ফায়ার হয়ে
+  // duplicate notice তৈরি হয়ে যেতে পারতো (ExamForm এর একই বাগ, একই ফিক্স)
+  disabled?: boolean;
 }
 
 // datetime-local ইনপুট এর ভ্যালু থেকে UTC ISO string — ExamForm এর
@@ -38,6 +42,7 @@ export default function NoticeForm({
   onSubmit,
   submitLabel = "সংরক্ষণ করো",
   existingPinnedCount = 0,
+  disabled = false,
 }: NoticeFormProps) {
   const [title, setTitle] = useState(initialValue?.title ?? "");
   const [content, setContent] = useState(initialValue?.content ?? "");
@@ -100,6 +105,7 @@ export default function NoticeForm({
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (disabled) return;
 
     const values = {
       title,
@@ -278,7 +284,9 @@ export default function NoticeForm({
         )}
       </div>
 
-      <Button type="submit">{submitLabel}</Button>
+      <Button type="submit" disabled={disabled}>
+        {submitLabel}
+      </Button>
     </form>
   );
 }

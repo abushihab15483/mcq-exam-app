@@ -18,6 +18,10 @@ interface ExamFormProps {
   submitLabel?: string;
   allowPublish?: boolean;
   questionCount?: number;
+  // পাতা (NewExamPage/EditExamPage) সেভ করার সময় true পাঠায় — বাটন disabled
+  // হয়ে যায়, নাহলে দ্রুত দুইবার/তিনবার ট্যাপ করলে দুইবার onSubmit ফায়ার হয়ে
+  // duplicate exam তৈরি হয়ে যেত (আগে এই guard-ই ছিল না)
+  disabled?: boolean;
 }
 
 // datetime-local ইনপুট এর ভ্যালু (যেমন "2026-08-24T10:00") থেকে UTC ISO string —
@@ -37,6 +41,7 @@ export default function ExamForm({
   submitLabel = "সংরক্ষণ করো",
   allowPublish = true,
   questionCount,
+  disabled = false,
 }: ExamFormProps) {
   const [title, setTitle] = useState(initialValue?.title ?? "");
   const [startTime, setStartTime] = useState(toLocalDateTimeInputValue(initialValue?.start_time));
@@ -50,6 +55,7 @@ export default function ExamForm({
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (disabled) return;
 
     const values = {
       title,
@@ -122,7 +128,9 @@ export default function ExamForm({
           </p>
         )}
       </div>
-      <Button type="submit">{submitLabel}</Button>
+      <Button type="submit" disabled={disabled}>
+        {submitLabel}
+      </Button>
     </form>
   );
 }

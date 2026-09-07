@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import NoticeForm from "./NoticeForm";
 import Card from "@/components/ui/Card";
@@ -21,11 +21,16 @@ export default function EditNoticeForm({ notice, initialError, existingPinnedCou
   const router = useRouter();
   const [error, setError] = useState<string | null>(initialError ?? null);
   const [saving, setSaving] = useState(false);
+  // দ্রুত ২-৩ বার ট্যাপে duplicate PATCH call আটকাতে — দেখো NewNoticeForm.tsx
+  // এর একই কমেন্ট (savingRef কেন state এর বদলে ref)
+  const savingRef = useRef(false);
 
   async function handleSubmit(
     values: NoticeInput,
     opts: { file: File | null; removeAttachment: boolean }
   ) {
+    if (savingRef.current) return;
+    savingRef.current = true;
     setSaving(true);
     setError(null);
 
@@ -40,6 +45,7 @@ export default function EditNoticeForm({ notice, initialError, existingPinnedCou
     const data = await res.json();
 
     if (!res.ok) {
+      savingRef.current = false;
       setSaving(false);
       setError(data.error ?? "আপডেট করা যায়নি");
       return;
@@ -54,6 +60,7 @@ export default function EditNoticeForm({ notice, initialError, existingPinnedCou
       });
       if (!uploadRes.ok) {
         const uploadData = await uploadRes.json().catch(() => null);
+        savingRef.current = false;
         setSaving(false);
         setError(uploadData?.error ?? "ফাইল আপলোড করা যায়নি");
         return;
@@ -62,15 +69,17 @@ export default function EditNoticeForm({ notice, initialError, existingPinnedCou
       const removeRes = await fetch(`/api/notices/${notice.id}/attachment`, { method: "DELETE" });
       if (!removeRes.ok) {
         const removeData = await removeRes.json().catch(() => null);
+        savingRef.current = false;
         setSaving(false);
         setError(removeData?.error ?? "অ্যাটাচমেন্ট সরানো যায়নি");
         return;
       }
     }
 
-    setSaving(false);
     router.push("/notices");
     router.refresh();
+    // savingRef ইচ্ছাকৃতভাবে reset করা হচ্ছে না — component এখনই unmount হচ্ছে,
+    // দেখো NewNoticeForm.tsx এর একই কমেন্ট
   }
 
   return (
@@ -85,6 +94,7 @@ export default function EditNoticeForm({ notice, initialError, existingPinnedCou
         onSubmit={handleSubmit}
         submitLabel={saving ? "সংরক্ষণ হচ্ছে..." : "পরিবর্তন সংরক্ষণ করো"}
         existingPinnedCount={existingPinnedCount}
+        disabled={saving}
       />
     </Card>
   );

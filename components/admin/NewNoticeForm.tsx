@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import NoticeForm from "@/components/admin/NoticeForm";
 import Card from "@/components/ui/Card";
@@ -19,11 +19,17 @@ export default function NewNoticeForm({ existingPinnedCount }: NewNoticeFormProp
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  // useRef — setState ব্যাচড/asynchronous বলে দ্রুত ২-৩ বার ট্যাপ করলে re-render
+  // হওয়ার আগেই দ্বিতীয়/তৃতীয় ক্লিক চলে আসতে পারে, ref সবসময় সিঙ্ক্রোনাস —
+  // এটাই আসল guard, নিচের disabled prop (Button UI) দ্বিতীয় স্তরের সুরক্ষা
+  const savingRef = useRef(false);
 
   // Sequencing (FINAL PLAN Step 3): notice আগে insert করে id পাওয়া, তারপর
   // সেই id দিয়ে attachment upload — নতুন notice এ attachment_url সবসময়ই
   // খালি পাঠানো হচ্ছে (create এ কখনো সরাসরি URL বসানো হয় না)
   async function handleSubmit(values: NoticeInput, opts: { file: File | null; removeAttachment: boolean }) {
+    if (savingRef.current) return;
+    savingRef.current = true;
     setSaving(true);
     setError(null);
 
@@ -35,6 +41,7 @@ export default function NewNoticeForm({ existingPinnedCount }: NewNoticeFormProp
     const data = await res.json();
 
     if (!res.ok) {
+      savingRef.current = false;
       setSaving(false);
       setError(data.error ?? "তৈরি করা যায়নি");
       return;
@@ -51,6 +58,7 @@ export default function NewNoticeForm({ existingPinnedCount }: NewNoticeFormProp
       });
       if (!uploadRes.ok) {
         const uploadData = await uploadRes.json().catch(() => null);
+        savingRef.current = false;
         setSaving(false);
         // notice আগে থেকেই তৈরি হয়ে গেছে (attachment ছাড়া) — তাই এডিট পেজে
         // পাঠানো হচ্ছে যাতে আবার চেষ্টা করা যায় (আবার "তৈরি করো" করলে
@@ -69,9 +77,11 @@ export default function NewNoticeForm({ existingPinnedCount }: NewNoticeFormProp
       }
     }
 
-    setSaving(false);
     router.push("/notices");
     router.refresh();
+    // savingRef ইচ্ছাকৃতভাবে reset করা হচ্ছে না — component এখনই unmount হচ্ছে
+    // (router.push), reset করলে navigation শেষ হওয়ার আগে বাটন আবার সক্রিয়
+    // হয়ে দ্বিতীয় submit-এর সুযোগ তৈরি হতে পারত
   }
 
   return (
@@ -85,6 +95,7 @@ export default function NewNoticeForm({ existingPinnedCount }: NewNoticeFormProp
         onSubmit={handleSubmit}
         submitLabel={saving ? "সংরক্ষণ হচ্ছে..." : "নোটিশ তৈরি করো"}
         existingPinnedCount={existingPinnedCount}
+        disabled={saving}
       />
     </Card>
   );
